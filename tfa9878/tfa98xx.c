@@ -48,9 +48,7 @@
 #include <linux/power_supply.h>
 #define REF_TEMP_DEVICE_NAME "battery"
 
-#ifdef MPLATFORM
 #include <mtk-sp-spk-amp.h>
-#endif
 
 #define TFA98XX_VERSION	TFA98XX_API_REV_STR
 
@@ -147,8 +145,6 @@ static void tfa98xx_check_calibration(struct tfa98xx *tfa98xx);
 static int tfa98xx_run_calibration(struct tfa98xx *tfa98xx);
 
 static enum tfa98xx_error tfa98xx_set_tfadsp_bypass(struct tfa_device *tfa);
-
-static enum tfa98xx_error tfa98xx_read_reference_temp(short *value);
 
 static void tfa98xx_set_dsp_configured(struct tfa98xx *tfa98xx);
 
@@ -1572,7 +1568,7 @@ static int tfa98xx_run_calibration(struct tfa98xx *tfa98xx0)
 	return 0;
 }
 
-static enum tfa98xx_error tfa98xx_read_reference_temp(short *value)
+enum tfa98xx_error tfa98xx_read_reference_temp(short *value)
 {
 	struct power_supply *psy = NULL;
 	union power_supply_propval prop_read = {0};
@@ -3261,7 +3257,6 @@ int tfa_ext_register(dsp_send_message_t tfa_send_message,
 	return 0;
 }
 
-#ifdef MPLATFORM
 int ipi_tfadsp_write(void *tfa, int length, const char *buf)
 {
 	enum tfa98xx_error err = TFA98XX_ERROR_OK;
@@ -3312,7 +3307,6 @@ int ipi_tfadsp_read(void *tfa, int length, unsigned char *bytes)
 
 	return (int)err;
 }
-#endif
 
 int tfa_set_blackbox(int enable)
 {
@@ -3438,13 +3432,11 @@ static void tfa98xx_container_loaded
 
 /* TEMPORARY, until TFA device is probed before tfa_ext is called */
 	if (tfa98xx->tfa->is_probus_device) {
-#ifdef MPLATFORM
 		tfa98xx->tfa->dev_ops.dsp_msg
 			= (dsp_send_message_t)ipi_tfadsp_write;
 		tfa98xx->tfa->dev_ops.dsp_msg_read
 			= (dsp_read_message_t)ipi_tfadsp_read;
 		tfa_set_ipc_loaded(1);
-#endif
 	} else {
 		/* DSP solution: non-probus */
 		tfa98xx->tfa->dev_ops.dsp_msg
@@ -5471,7 +5463,7 @@ enum tfa98xx_error tfa_get_vval_data_channel(int channel, uint16_t *value)
 EXPORT_SYMBOL(tfa_get_vval_data_channel);
 
 
-static int tfa_get_power_state(int index)
+int tfa_get_power_state(int index)
 {
 	struct tfa_device *tfa = tfa98xx_get_tfa_device_from_index(index);
 	int pm = 0;

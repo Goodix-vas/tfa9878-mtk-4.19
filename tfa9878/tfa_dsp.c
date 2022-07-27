@@ -4309,8 +4309,8 @@ enum tfa_error tfa_dev_start(struct tfa_device *tfa,
 			forced = 1;
 			tfa->reset_mtpex = 1;
 		}
-		cal_ready = (tfa->active_count < tfa->dev_count) ? 0 : 1;
 		cal_ready &= (tfa->disable_auto_cal) ? 0 : 1;
+		cal_ready &= (tfa->active_count < tfa->dev_count) ? 0 : 1;
 		if (cal_ready) {
 			cal_profile = tfa_cont_get_cal_profile(tfa);
 			if (cal_profile >= 0) {

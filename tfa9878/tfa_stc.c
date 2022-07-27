@@ -100,7 +100,7 @@ static ssize_t spkt_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	int idx = tfa_get_dev_idx_from_inchannel(0);
-	int value, size;
+	int value = 0, size;
 	char spkt_result[FILESIZE_STC] = {0};
 
 	value = tfa98xx_update_spkt_data(idx);
@@ -182,7 +182,7 @@ static ssize_t spkt_r_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	int idx = tfa_get_dev_idx_from_inchannel(1);
-	int value, size;
+	int value = 0, size;
 	char spkt_result[FILESIZE_STC] = {0};
 
 	value = tfa98xx_update_spkt_data(idx);

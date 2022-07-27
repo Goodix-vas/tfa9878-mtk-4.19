@@ -24,6 +24,9 @@ endif
 # cc flags
 #ccflags-y              := -DDEBUG
 ccflags-y               += -Werror
+ifdef TFA_STEREO_NODE
+ccflags-y               += -DTFA_STEREO_NODE
+endif
 
 # objs
 snd-soc-tfa98xx-objs    := tfa98xx.o

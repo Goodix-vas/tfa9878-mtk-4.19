@@ -374,9 +374,7 @@ enum tfa98xx_error tfa_gain_rampdown(struct tfa_device *tfa,
 enum tfa98xx_error tfa_gain_restore(struct tfa_device *tfa,
 	int step, int count);
 
-#if defined(MPLATFORM)
 int ipi_tfadsp_write(void *tfa, int length, const char *buf);
 int ipi_tfadsp_read(void *tfa, int length, unsigned char *bytes);
-#endif
 
 #endif /* __TFA_DEVICE_H__ */
