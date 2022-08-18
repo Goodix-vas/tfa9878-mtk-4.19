@@ -141,11 +141,11 @@ int tfa_irq_clear(struct tfa_device *tfa, int bit)
 		/* operate on all bits */
 		for (reg = TFA98XX_INTERRUPT_IN_REG1;
 			reg < TFA98XX_INTERRUPT_IN_REG1 + 3; reg++)
-			reg_write(tfa, reg, 0xffff); /* all bits */
+			tfa_reg_write(tfa, reg, 0xffff); /* all bits */
 	} else if (bit < tfa->irq_max) {
 		reg = (unsigned char)
 			(TFA98XX_INTERRUPT_IN_REG1 + (bit >> 4));
-		reg_write(tfa, reg, 1 << (bit & 0x0f));
+		tfa_reg_write(tfa, reg, 1 << (bit & 0x0f));
 		/* only this bit */
 	} else {
 		return TFA_ERROR;
@@ -166,7 +166,7 @@ int tfa_irq_get(struct tfa_device *tfa, int bit)
 		/* only this bit */
 		reg = TFA98XX_INTERRUPT_OUT_REG1 + (bit >> 4);
 		mask = 1 << (bit & 0x0f);
-		reg_read(tfa, (unsigned char)reg, &value);
+		tfa_reg_read(tfa, (unsigned char)reg, &value);
 	} else {
 		return TFA_ERROR;
 	}
@@ -188,7 +188,7 @@ int tfa_irq_ena(struct tfa_device *tfa, int bit, int state)
 		for (reg = TFA98XX_INTERRUPT_ENABLE_REG1;
 			reg <= TFA98XX_INTERRUPT_ENABLE_REG1
 			+ tfa->irq_max / 16; reg++) {
-			reg_write(tfa,
+			tfa_reg_write(tfa,
 				(unsigned char)reg,
 				state ? 0xffff : 0); /* all bits */
 			tfa->interrupt_enable
@@ -199,13 +199,13 @@ int tfa_irq_ena(struct tfa_device *tfa, int bit, int state)
 		/* only this bit */
 		reg = TFA98XX_INTERRUPT_ENABLE_REG1 + (bit >> 4);
 		mask = 1 << (bit & 0x0f);
-		reg_read(tfa, (unsigned char)reg, &value);
+		tfa_reg_read(tfa, (unsigned char)reg, &value);
 		if (state) /* set */
 			new_value = (uint16_t)(value | mask);
 		else /* clear */
 			new_value = value & ~mask;
 		if (new_value != value) {
-			reg_write(tfa,
+			tfa_reg_write(tfa,
 				(unsigned char)reg,
 				new_value); /* only this bit */
 			tfa->interrupt_enable
@@ -230,7 +230,7 @@ int tfa_irq_mask(struct tfa_device *tfa)
 	for (reg = TFA98XX_INTERRUPT_ENABLE_REG1;
 		reg <= TFA98XX_INTERRUPT_ENABLE_REG1
 			+ tfa->irq_max / 16; reg++)
-		reg_write(tfa, (unsigned char)reg, 0);
+		tfa_reg_write(tfa, (unsigned char)reg, 0);
 
 	return 0;
 }
@@ -246,7 +246,7 @@ int tfa_irq_unmask(struct tfa_device *tfa)
 	for (reg = TFA98XX_INTERRUPT_ENABLE_REG1;
 		reg <= TFA98XX_INTERRUPT_ENABLE_REG1
 			+ tfa->irq_max / 16; reg++)
-		reg_write(tfa, (unsigned char)reg,
+		tfa_reg_write(tfa, (unsigned char)reg,
 			tfa->interrupt_enable
 			[reg - TFA98XX_INTERRUPT_ENABLE_REG1]);
 
@@ -266,7 +266,7 @@ int tfa_irq_set_pol(struct tfa_device *tfa, int bit, int state)
 		for (reg = TFA98XX_STATUS_POLARITY_REG1;
 			reg <= TFA98XX_STATUS_POLARITY_REG1
 			+ tfa->irq_max / 16; reg++) {
-			reg_write(tfa,
+			tfa_reg_write(tfa,
 				(unsigned char)reg,
 				state ? 0xffff : 0); /* all bits */
 		}
@@ -274,13 +274,13 @@ int tfa_irq_set_pol(struct tfa_device *tfa, int bit, int state)
 		/* only this bit */
 		reg = TFA98XX_STATUS_POLARITY_REG1 + (bit >> 4);
 		mask = 1 << (bit & 0x0f);
-		reg_read(tfa, (unsigned char)reg, &value);
+		tfa_reg_read(tfa, (unsigned char)reg, &value);
 		if (state) /* Active High */
 			new_value = (uint16_t)(value | mask);
 		else /* Active Low */
 			new_value = value & ~mask;
 		if (new_value != value)
-			reg_write(tfa, (unsigned char)reg, new_value);
+			tfa_reg_write(tfa, (unsigned char)reg, new_value);
 			/* only this bit */
 	} else {
 		return TFA_ERROR;
@@ -1119,12 +1119,12 @@ enum tfa98xx_error tfa98xx_get_mtp(struct tfa_device *tfa, uint16_t *value)
 void tfa98xx_key2(struct tfa_device *tfa, int lock)
 {
 	/* unhide lock registers */
-	reg_write(tfa, (tfa->tfa_family == 1) ? 0x40 : 0x0f, 0x5a6b);
+	tfa_reg_write(tfa, (tfa->tfa_family == 1) ? 0x40 : 0x0f, 0x5a6b);
 	/* lock/unlock key2 MTPK */
 	TFA_WRITE_REG(tfa, MTPKEY2, lock ? 0 : 0x5a);
 	/* unhide lock registers */
 	if (!tfa->advance_keys_handling) /*artf65038*/
-		reg_write(tfa, (tfa->tfa_family == 1) ? 0x40 : 0x0f, 0);
+		tfa_reg_write(tfa, (tfa->tfa_family == 1) ? 0x40 : 0x0f, 0);
 }
 
 void tfa2_manual_mtp_cpy(struct tfa_device *tfa,
@@ -1140,15 +1140,15 @@ void tfa2_manual_mtp_cpy(struct tfa_device *tfa,
 		if (tfa->verbose)
 			pr_debug("FAIM enabled (err:%d).\n", error);
 	}
-	reg_read(tfa, (unsigned char)reg_row_to_keep, &value);
+	tfa_reg_read(tfa, (unsigned char)reg_row_to_keep, &value);
 	if (!row) {
-		reg_write(tfa, 0xa7, value);
-		reg_write(tfa, 0xa8, reg_row_to_set);
+		tfa_reg_write(tfa, 0xa7, value);
+		tfa_reg_write(tfa, 0xa8, reg_row_to_set);
 	} else {
-		reg_write(tfa, 0xa7, reg_row_to_set);
-		reg_write(tfa, 0xa8, value);
+		tfa_reg_write(tfa, 0xa7, reg_row_to_set);
+		tfa_reg_write(tfa, 0xa8, value);
 	}
-	reg_write(tfa, 0xa3, 0x10 | row);
+	tfa_reg_write(tfa, 0xa3, 0x10 | row);
 	if (tfa->is_probus_device) {
 		/* Assure FAIM is enabled (enable it when neccesery) */
 		for (loop = 0; loop < 100 /* x 10ms */; loop++) {
@@ -1715,7 +1715,7 @@ enum tfa98xx_error dsp_msg_read(struct tfa_device *tfa,
 	return error;
 }
 
-enum tfa98xx_error reg_read(struct tfa_device *tfa,
+enum tfa98xx_error tfa_reg_read(struct tfa_device *tfa,
 	unsigned char subaddress, unsigned short *value)
 {
 	enum tfa98xx_error error;
@@ -1729,7 +1729,7 @@ enum tfa98xx_error reg_read(struct tfa_device *tfa,
 	return error;
 }
 
-enum tfa98xx_error reg_write(struct tfa_device *tfa,
+enum tfa98xx_error tfa_reg_write(struct tfa_device *tfa,
 	unsigned char subaddress, unsigned short value)
 {
 	enum tfa98xx_error error;
@@ -2358,7 +2358,7 @@ int tfa_set_bf(struct tfa_device *tfa,
 	if (bf == -1) /* undefined bitfield */
 		return 0;
 
-	err = reg_read(tfa, address, &regvalue);
+	err = tfa_reg_read(tfa, address, &regvalue);
 	if (err) {
 		pr_err("Error getting bf :%d\n", -err);
 		return -err;
@@ -2373,7 +2373,7 @@ int tfa_set_bf(struct tfa_device *tfa,
 	 * not the same as the new value
 	 */
 	if (oldvalue != regvalue) {
-		err = reg_write(tfa, address, regvalue);
+		err = tfa_reg_write(tfa, address, regvalue);
 		if (err) {
 			pr_err("Error setting bf :%d\n", -err);
 			return -err;
@@ -2401,7 +2401,7 @@ int tfa_set_bf_volatile(struct tfa_device *tfa,
 	if (bf == -1) /* undefined bitfield */
 		return 0;
 
-	err = reg_read(tfa, address, &regvalue);
+	err = tfa_reg_read(tfa, address, &regvalue);
 	if (err) {
 		pr_err("Error getting bf :%d\n", -err);
 		return -err;
@@ -2411,7 +2411,7 @@ int tfa_set_bf_volatile(struct tfa_device *tfa,
 	regvalue &= ~msk;
 	regvalue |= value << pos;
 
-	err = reg_write(tfa, address, regvalue);
+	err = tfa_reg_write(tfa, address, regvalue);
 	if (err) {
 		pr_err("Error setting bf :%d\n", -err);
 		return -err;
@@ -2438,7 +2438,7 @@ int tfa_get_bf(struct tfa_device *tfa, const uint16_t bf)
 	if (bf == -1) /* undefined bitfield */
 		return 0;
 
-	err = reg_read(tfa, address, &regvalue);
+	err = tfa_reg_read(tfa, address, &regvalue);
 	if (err) {
 		pr_err("Error getting bf :%d\n", -err);
 		return -err;
@@ -2509,7 +2509,7 @@ int tfa_write_reg(struct tfa_device *tfa,
 	if (bf == -1) /* undefined bitfield */
 		return 0;
 
-	err = reg_write(tfa, address, reg_value);
+	err = tfa_reg_write(tfa, address, reg_value);
 	if (err)
 		return -err;
 
@@ -2526,7 +2526,7 @@ int tfa_read_reg(struct tfa_device *tfa, const uint16_t bf)
 	if (bf == -1) /* undefined bitfield */
 		return 0;
 
-	err = reg_read(tfa, address, &regvalue);
+	err = tfa_reg_read(tfa, address, &regvalue);
 	if (err)
 		return -err;
 
@@ -5647,7 +5647,7 @@ int tfa_dev_mtp_get(struct tfa_device *tfa, enum tfa_mtp item)
 			else
 				value = TFA_GET_BF(tfa, R25C);
 		} else {
-			reg_read(tfa, 0x83, (unsigned short *)&value);
+			tfa_reg_read(tfa, 0x83, (unsigned short *)&value);
 		}
 		break;
 	case TFA_MTP_RE25_SEC:

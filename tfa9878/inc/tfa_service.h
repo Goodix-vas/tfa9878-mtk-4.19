@@ -798,9 +798,9 @@ enum tfa98xx_error dsp_msg(struct tfa_device *tfa,
 	int length, const char *buf);
 enum tfa98xx_error dsp_msg_read(struct tfa_device *tfa,
 	int length, unsigned char *bytes);
-enum tfa98xx_error reg_write(struct tfa_device *tfa,
+enum tfa98xx_error tfa_reg_write(struct tfa_device *tfa,
 	unsigned char subaddress, unsigned short value);
-enum tfa98xx_error reg_read(struct tfa_device *tfa,
+enum tfa98xx_error tfa_reg_read(struct tfa_device *tfa,
 	unsigned char subaddress, unsigned short *value);
 enum tfa98xx_error mem_write(struct tfa_device *tfa,
 	unsigned short address, int value, int memtype);

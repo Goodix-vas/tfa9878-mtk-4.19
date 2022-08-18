@@ -1166,7 +1166,7 @@ enum tfa98xx_error tfa_run_read_bitfield(struct tfa_device *tfa,
 
 	bf_uni.field = bf->field;
 
-	error = reg_read(tfa,
+	error = tfa_reg_read(tfa,
 		(unsigned char)(bf_uni.bf_enum.address), &regvalue);
 	if (error)
 		return error;
@@ -1297,7 +1297,7 @@ static enum tfa98xx_error tfa_run_write_register
 		pr_debug("register: 0x%02x=0x%04x (msk=0x%04x)\n",
 			reg->address, reg->value, reg->mask);
 
-	error = reg_read(tfa, reg->address, &value);
+	error = tfa_reg_read(tfa, reg->address, &value);
 	if (error)
 		return error;
 
@@ -1305,7 +1305,7 @@ static enum tfa98xx_error tfa_run_write_register
 	newvalue = reg->value & reg->mask;
 
 	value |= newvalue;
-	error = reg_write(tfa, reg->address, value);
+	error = tfa_reg_write(tfa, reg->address, value);
 
 	return error;
 }
