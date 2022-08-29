@@ -3553,6 +3553,13 @@ static int tfa98xx_load_container(struct tfa98xx *tfa98xx)
 			FW_ACTION_HOTPLUG,
 			fw_name, tfa98xx->dev, GFP_KERNEL,
 			tfa98xx, tfa98xx_container_loaded);
+		if (!ret) {
+			/* expecting sysfs fallback mechanism */
+			pr_info("%s: dsp_fw_state %d (if done, %d)\n",
+				__func__, tfa98xx->dsp_fw_state,
+				TFA98XX_DSP_FW_OK);
+			return ret;
+		}
 		/* wait until driver completes loading */
 		msleep_interruptible(20);
 		if (tfa98xx->dsp_fw_state == TFA98XX_DSP_FW_OK)
