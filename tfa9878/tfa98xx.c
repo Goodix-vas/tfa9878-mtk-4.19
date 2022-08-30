@@ -3532,6 +3532,7 @@ static void tfa98xx_container_loaded
 			if (tfa98xx->tfa->tfa_family == 2)
 				TFA_SET_BF(tfa98xx->tfa, MANSCONF, 1);
 		}
+		tfa_set_status_flag(tfa98xx->tfa, TFA_SET_DEVICE, 0);
 		mutex_unlock(&tfa98xx->dsp_lock);
 	}
 
