@@ -3361,6 +3361,7 @@ static void tfa98xx_container_loaded
 		mutex_unlock(&probe_lock);
 		return;
 	}
+
 	tfa98xx->dsp_fw_state = TFA98XX_DSP_FW_FAIL;
 
 	if (!cont) {
@@ -4106,8 +4107,10 @@ static int _tfa98xx_mute(struct tfa98xx *tfa98xx, int mute, int stream)
 			mute,
 			tfa98xx->pstream, tfa98xx->cstream, tfa98xx->samstream);
 
-		if (tfa98xx_count_active_stream(BIT_PSTREAM)
-			== tfa98xx_device_count) /* at first device */
+		if ((tfa98xx_count_active_stream(BIT_PSTREAM)
+			== tfa98xx_device_count)
+			&& (tfa98xx_count_active_stream(BIT_CSTREAM)
+			== tfa98xx_device_count)) /* at first mute of either */
 			if (tfa98xx->tfa->blackbox_enable
 				&& !tfa98xx->tfa->unset_log) {
 				/* get logging once
@@ -5470,7 +5473,6 @@ enum tfa98xx_error tfa_get_vval_data_channel(int channel, uint16_t *value)
 	return tfa_get_vval_data(index, value);
 }
 EXPORT_SYMBOL(tfa_get_vval_data_channel);
-
 
 int tfa_get_power_state(int index)
 {

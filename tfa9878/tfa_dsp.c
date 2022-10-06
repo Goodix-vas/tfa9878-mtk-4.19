@@ -2961,6 +2961,7 @@ enum tfa98xx_error tfa_set_calibration_values(struct tfa_device *tfa)
 	/* calibration is not available if not all devices are active */
 	cal_ready = (tfa->active_count < tfa->dev_count) ? 0 : 1;
 	cal_ready &= (tfa->disable_auto_cal) ? 0 : 1;
+
 	if (need_cal == 1 && cal_ready == 0) {
 		value = tfa->dummy_cal;
 		if (value == 0) /* use default calibration data */
@@ -6124,7 +6125,6 @@ enum tfa98xx_error tfa_read_tspkr(struct tfa_device *tfa, int *spkt)
 	/* SoftDSP interface differs from hw-dsp interfaces */
 	if (tfa->is_probus_device && tfa->dev_count > 1)
 		spkr_count = tfa->dev_count;
-
 
 	nr_bytes = (TEMP_INDEX + spkr_count) * 3;
 
