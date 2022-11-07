@@ -144,9 +144,10 @@ static int _tfa98xx_stop(struct tfa98xx *tfa98xx);
 static void tfa98xx_check_calibration(struct tfa98xx *tfa98xx);
 static int tfa98xx_run_calibration(struct tfa98xx *tfa98xx);
 
-static enum tfa98xx_error tfa98xx_set_tfadsp_bypass(struct tfa_device *tfa);
-
 static void tfa98xx_set_dsp_configured(struct tfa98xx *tfa98xx);
+
+static void tfa98xx_container_loaded
+	(const struct firmware *cont, void *context);
 
 struct tfa98xx_rate {
 	unsigned int rate;
@@ -1352,7 +1353,7 @@ static void tfa98xx_check_calibration(struct tfa98xx *tfa98xx)
 	}
 }
 
-static enum tfa98xx_error tfa98xx_set_tfadsp_bypass(struct tfa_device *tfa)
+enum tfa98xx_error tfa98xx_set_tfadsp_bypass(struct tfa_device *tfa)
 {
 	enum tfa98xx_error err = TFA98XX_ERROR_OK;
 	int res_len = 3;

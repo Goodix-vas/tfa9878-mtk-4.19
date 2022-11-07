@@ -3776,6 +3776,7 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 	enum tfa98xx_error err = TFA98XX_ERROR_OK;
 	struct tfa_device *ntfa;
 	int i;
+	int active_profile = -1;
 
 	pr_info("%s: [%d] triggered\n",
 		__func__, tfa->dev_idx);
@@ -3816,7 +3817,8 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 			PRINT_ASSERT(err);
 		}
 
-		if (ntfa->next_profile == ntfa->profile
+		active_profile = tfa_dev_get_swprof(ntfa);
+		if (ntfa->next_profile == active_profile
 			|| ntfa->next_profile < 0)
 			continue;
 
@@ -3829,6 +3831,8 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 	/* reset counter */
 	tfa_set_status_flag(tfa, TFA_SET_DEVICE, -1);
 	tfa_set_status_flag(tfa, TFA_SET_CONFIG, -1);
+
+	tfa98xx_set_tfadsp_bypass(tfa);
 
 	/*
 	 * restore profile after calibration.
@@ -3845,9 +3849,10 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 
 		tfa_set_status_flag(ntfa, TFA_SET_DEVICE, 1);
 
+		active_profile = tfa_dev_get_swprof(ntfa);
 		pr_info("%s: [%d] restore profile after calibration (active %d; next %d)\n",
 			__func__, ntfa->dev_idx,
-			ntfa->profile, ntfa->next_profile);
+			active_profile, ntfa->next_profile);
 
 		/* switch profile */
 		if (cal_err != TFA98XX_ERROR_OK || calibration_done == 0) {
