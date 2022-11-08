@@ -5556,6 +5556,12 @@ int tfa98xx_update_spkt_data(int idx)
 	if (pm > 0) /* reset temperature in low power state */
 		return DEFAULT_REF_TEMP;
 
+	if (tfa->is_configured > 0) {
+		pr_info("%s: skipped - tfadsp in not configured\n",
+			__func__);
+		return DEFAULT_REF_TEMP;
+	}
+
 	pr_info("%s: tfa_stc - read tspkr for stc\n",
 		__func__);
 
@@ -5625,6 +5631,12 @@ int tfa98xx_write_sknt_control(int idx, int value)
 
 	if (tfa->is_calibrating) {
 		pr_info("%s: skipped - tfadsp is running calibraion!\n",
+			__func__);
+		goto tfa98xx_write_sknt_control_exit;
+	}
+
+	if (tfa->is_configured > 0) {
+		pr_info("%s: skipped - tfadsp in not configured\n",
 			__func__);
 		goto tfa98xx_write_sknt_control_exit;
 	}
