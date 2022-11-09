@@ -4319,6 +4319,12 @@ enum tfa_error tfa_dev_start(struct tfa_device *tfa,
 		cal_ready &= (tfa->active_count < tfa->dev_count) ? 0 : 1;
 		if (cal_ready) {
 			cal_profile = tfa_cont_get_cal_profile(tfa);
+			if (next_profile == cal_profile) {
+				tfa->next_profile
+					= (active_profile >= 0) ? active_profile : 0;
+				pr_info("%s: set next profile %d for dev %d, if cal profile is selected\n",
+					__func__, tfa->next_profile, tfa->dev_idx);
+			}
 			if (cal_profile >= 0) {
 				pr_info("%s: set profile for calibration profile %d\n",
 					__func__, cal_profile);
