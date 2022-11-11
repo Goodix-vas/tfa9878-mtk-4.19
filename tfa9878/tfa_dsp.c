@@ -3832,8 +3832,6 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 	tfa_set_status_flag(tfa, TFA_SET_DEVICE, -1);
 	tfa_set_status_flag(tfa, TFA_SET_CONFIG, -1);
 
-	tfa98xx_set_tfadsp_bypass(tfa);
-
 	/*
 	 * restore profile after calibration.
 	 * typically, when calibration is done,
