@@ -3812,10 +3812,8 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 		pr_debug("%s: [%d] process calibration data\n",
 			__func__, ntfa->dev_idx);
 		err = tfa_dsp_get_calibration_impedance(ntfa);
-		if (err != TFA98XX_ERROR_OK) {
-			cal_err = err;
+		if (err != TFA98XX_ERROR_OK)
 			PRINT_ASSERT(err);
-		}
 
 		active_profile = tfa_dev_get_swprof(ntfa);
 		if (ntfa->next_profile == active_profile
