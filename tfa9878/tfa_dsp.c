@@ -3861,6 +3861,8 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 			if (err != TFA98XX_ERROR_OK)
 				pr_err("%s: error in writing regs (%d)\n",
 					__func__, err);
+			else if (TFA_GET_BF(ntfa, PWDN) != 0)
+				err = tfa98xx_powerdown(ntfa, 0);
 		} else {
 			/* with the entire setting in success case */
 			pr_info("%s: apply the whole profile setting at success\n",
@@ -3873,6 +3875,10 @@ enum tfa98xx_error tfa_wait_cal(struct tfa_device *tfa)
 					__func__, err);
 		}
 	}
+
+	/* reset counter */
+	tfa_set_status_flag(tfa, TFA_SET_DEVICE, -1);
+	tfa_set_status_flag(tfa, TFA_SET_CONFIG, -1);
 
 	return cal_err;
 }
