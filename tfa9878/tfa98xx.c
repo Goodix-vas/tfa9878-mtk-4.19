@@ -3328,6 +3328,9 @@ static void tfa98xx_interrupt_enable_tfa2(struct tfa98xx *tfa98xx, bool enable)
 {
 	tfa98xx->istatus = 0;
 
+	/* clear all the events before enabling */
+	tfa_irq_clear(tfa98xx->tfa, tfa98xx->tfa->irq_all);
+
 	tfa_irq_ena(tfa98xx->tfa, tfa9878_irq_stotds, enable);
 	tfa_irq_ena(tfa98xx->tfa, tfa9878_irq_stocpr, enable);
 	tfa_irq_ena(tfa98xx->tfa, tfa9878_irq_stuvds, enable);
