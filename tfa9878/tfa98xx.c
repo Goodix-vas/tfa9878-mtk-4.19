@@ -5529,6 +5529,16 @@ int tfa98xx_update_spkt_data(int idx)
 	if (tfa->tfa_family == 0)
 		return DEFAULT_REF_TEMP;
 
+	if (tfa->active_handle > 0) {
+		pr_info("%s: swtcihed to active handle - %d\n",
+			__func__, tfa->active_handle);
+		tfa = tfa98xx_get_tfa_device_from_index(tfa->active_handle);
+		if (tfa == NULL)
+			return DEFAULT_REF_TEMP;
+		if (tfa->tfa_family == 0)
+			return DEFAULT_REF_TEMP;
+	}
+
 	ndev = tfa->dev_count;
 	if ((ndev < 1)
 		|| (idx < 0 || idx >= ndev))
@@ -5614,6 +5624,16 @@ int tfa98xx_write_sknt_control(int idx, int value)
 		return -ENODEV;
 	if (tfa->tfa_family == 0)
 		return -ENODEV;
+
+	if (tfa->active_handle > 0) {
+		pr_info("%s: swtcihed to active handle - %d\n",
+			__func__, tfa->active_handle);
+		tfa = tfa98xx_get_tfa_device_from_index(tfa->active_handle);
+		if (tfa == NULL)
+			return -ENODEV;
+		if (tfa->tfa_family == 0)
+			return -ENODEV;
+	}
 
 	ndev = tfa->dev_count;
 	if ((ndev < 1)

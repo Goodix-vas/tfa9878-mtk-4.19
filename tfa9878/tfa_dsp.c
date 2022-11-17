@@ -1867,11 +1867,13 @@ enum tfa98xx_error tfa_dsp_cmd_id_write(struct tfa_device *tfa,
 	unsigned char *buffer;
 	int nr = 0;
 
-	buffer = kmem_cache_alloc(tfa->cachep, GFP_KERNEL);
-	if (buffer == NULL)
-		return TFA98XX_ERROR_FAIL;
-
 	mutex_lock(&dsp_msg_lock);
+
+	buffer = kmem_cache_alloc(tfa->cachep, GFP_KERNEL);
+	if (buffer == NULL) {
+		mutex_unlock(&dsp_msg_lock);
+		return TFA98XX_ERROR_FAIL;
+	}
 
 	buffer[nr++] = tfa->spkr_select;
 	buffer[nr++] = module_id + 0x80;
@@ -1884,9 +1886,9 @@ enum tfa98xx_error tfa_dsp_cmd_id_write(struct tfa_device *tfa,
 
 	error = dsp_msg(tfa, nr, (char *)buffer);
 
-	mutex_unlock(&dsp_msg_lock);
-
 	kmem_cache_free(tfa->cachep, buffer);
+
+	mutex_unlock(&dsp_msg_lock);
 
 	return error;
 }
