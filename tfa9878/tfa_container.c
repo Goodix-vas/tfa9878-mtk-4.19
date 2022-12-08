@@ -27,7 +27,8 @@ static int float_to_int(uint32_t x)
 {
 	unsigned int e, m;
 
-	e = (0x7f + 31) - ((*(unsigned int *)&x & 0x7f800000) >> 23);
+	e = (unsigned int)((0x7f + 31)
+		- (int)((*(unsigned int *)&x & 0x7f800000) >> 23));
 	m = 0x80000000 | (*(unsigned int *)&x << 8);
 
 	return -(int)((m >> e) & -(e < 32));

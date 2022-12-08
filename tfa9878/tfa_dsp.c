@@ -6223,14 +6223,14 @@ enum tfa98xx_error tfa_write_volume(struct tfa_device *tfa, int *sknt)
 			tfa->active_handle); /* -1 if active_handle == -1 */
 
 	if (active_channel != -1) {
-		pr_info("%s: copy cal from active dev %d (channel %d)\n",
+		pr_info("%s: copy vol from active dev %d (channel %d)\n",
 			__func__, tfa->active_handle,
 			active_channel);
 		for (i = 0; i < MAX_CHANNELS; i++)
 			stcontrol[i] = stcontrol[active_channel];
 	}
 
-	for (i = 0; i < spkr_count; i++) {
+	for (i = 0; i < MAX_CHANNELS; i++) {
 		pr_info("%s: dev %d - surface temperature (%d)\n",
 			__func__, i, stcontrol[i]);
 		data = (int)stcontrol[i]; /* send value directly */

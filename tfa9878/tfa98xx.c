@@ -2846,30 +2846,30 @@ static int tfa98xx_append_i2c_address(struct device *dev,
 	struct snd_soc_dai_driver *dai_drv,
 	int num_dai)
 {
-	char buf[50];
+	char buf[50], name[50] = {0};
 	int i;
 	int i2cbus = i2c->adapter->nr;
 	int addr = i2c->addr;
 
 	if (dai_drv && num_dai > 0)
 		for (i = 0; i < num_dai; i++) {
-			snprintf(buf, 50, "%s-%d-%x",
-				dai_drv[i].name,
-				i2cbus, addr);
+			memcpy(name, dai_drv[i].name,
+				strlen(dai_drv[i].name));
+			snprintf(buf, 50, "%s-%d-%x", name, i2cbus, addr);
 			dai_drv[i].name = tfa98xx_devm_kstrdup(dev, buf);
 			pr_info("dai_drv[%d].name=%s\n", i, dai_drv[i].name);
 
-			snprintf(buf, 50, "%s-%d-%x",
-				dai_drv[i].playback.stream_name,
-				i2cbus, addr);
+			memcpy(name, dai_drv[i].playback.stream_name,
+				strlen(dai_drv[i].playback.stream_name));
+			snprintf(buf, 50, "%s-%d-%x", name, i2cbus, addr);
 			dai_drv[i].playback.stream_name
 				= tfa98xx_devm_kstrdup(dev, buf);
 			pr_info("dai_drv[%d].playback.stream_name=%s\n",
 				i, dai_drv[i].playback.stream_name);
 
-			snprintf(buf, 50, "%s-%d-%x",
-				dai_drv[i].capture.stream_name,
-				i2cbus, addr);
+			memcpy(name, dai_drv[i].capture.stream_name,
+				strlen(dai_drv[i].capture.stream_name));
+			snprintf(buf, 50, "%s-%d-%x", name, i2cbus, addr);
 			dai_drv[i].capture.stream_name
 				= tfa98xx_devm_kstrdup(dev, buf);
 			pr_info("dai_drv[%d].capture.stream_name=%s\n",
@@ -2889,8 +2889,10 @@ static int tfa98xx_append_i2c_address(struct device *dev,
 				continue;
 			if ((widgets[i].id == snd_soc_dapm_aif_in)
 				|| (widgets[i].id == snd_soc_dapm_aif_out)) {
+				memcpy(name, widgets[i].sname,
+					strlen(widgets[i].sname));
 				snprintf(buf, 50, "%s-%d-%x",
-					widgets[i].sname, i2cbus, addr);
+					name, i2cbus, addr);
 				widgets[i].sname
 					= tfa98xx_devm_kstrdup(dev, buf);
 				pr_info("widgets[%d].sname=%s\n",
@@ -4167,6 +4169,13 @@ static int _tfa98xx_mute(struct tfa98xx *tfa98xx, int mute, int stream)
 			|((tfa98xx->cstream<<1) & BIT_CSTREAM)
 			|((tfa98xx->samstream<<2) & BIT_SAMSTREAM));
 		mutex_unlock(&tfa98xx->dsp_lock);
+
+		if (tfa98xx->tfa->set_active == 0) {
+			pr_info("%s: skip unmuting device %d, if it's forced to set inactive\n",
+				__func__, tfa98xx->tfa->dev_idx);
+			tfa98xx->tfa->unset_log = 1;
+			return 0;
+		}
 
 		/* case: either p/cstream (both) or samstream is on
 		 * if ((tfa98xx->pstream != 0 && tfa98xx->cstream != 0)
@@ -5540,6 +5549,10 @@ int tfa98xx_update_spkt_data(int idx)
 	}
 
 	ndev = tfa->dev_count;
+#if !defined(TFA_STEREO_NODE)
+	if (ndev == 1 && idx > 0)
+		idx = 0; /* use device 0 in mono, by force */
+#endif
 	if ((ndev < 1)
 		|| (idx < 0 || idx >= ndev))
 		return DEFAULT_REF_TEMP;
@@ -5636,6 +5649,10 @@ int tfa98xx_write_sknt_control(int idx, int value)
 	}
 
 	ndev = tfa->dev_count;
+#if !defined(TFA_STEREO_NODE)
+	if (ndev == 1 && idx > 0)
+		idx = 0; /* use device 0 in mono, by force */
+#endif
 	if ((ndev < 1)
 		|| (idx < 0 || idx >= ndev))
 		return -EINVAL;
