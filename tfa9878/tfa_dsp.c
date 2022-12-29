@@ -1523,6 +1523,10 @@ static enum tfa98xx_error _dsp_msg(struct tfa_device *tfa, int lastmessage)
 		pr_debug("%s: send multi-message, length=%d (update at %s)\n",
 			__func__, len,
 			lastmessage ? "the last message" : "buffer full");
+	if (len < 0) {
+		error = len;
+		goto _dsp_msg_exit;
+	}
 
 	/* send messages to the target selected */
 	if (tfa98xx_count_active_stream(BIT_PSTREAM) > 0) {
@@ -1539,6 +1543,8 @@ static enum tfa98xx_error _dsp_msg(struct tfa_device *tfa, int lastmessage)
 		pr_info("%s: skip if PSTREAM is lost\n",
 			__func__);
 	}
+
+_dsp_msg_exit:
 	if (error != TFA98XX_ERROR_OK)
 		pr_err("%s: error in sending messages (%d)\n",
 			__func__, error);
@@ -2903,9 +2909,11 @@ enum tfa98xx_error tfa_set_calibration_values(struct tfa_device *tfa)
 			tfa_set_status_flag(tfa, TFA_SET_CONFIG, -1);
 
 			if (tfa->ext_dsp == 1) {
+				mutex_lock(&dsp_msg_lock);
 				pr_info("%s: flush buffer in blob, in bypass\n",
 					__func__);
 				err = tfa_tib_dsp_msgmulti(tfa, -2, NULL);
+				mutex_unlock(&dsp_msg_lock);
 			}
 
 			goto set_calibration_values_exit;
@@ -3178,9 +3186,11 @@ enum tfa98xx_error tfa_run_speaker_boost(struct tfa_device *tfa,
 	/* at initial device only: to flush buffer */
 	if (tfa_count_status_flag(tfa, TFA_SET_DEVICE) == 1) {
 		/* flush message buffer */
+		mutex_lock(&dsp_msg_lock);
 		pr_debug("%s: flush buffer in blob, in cold start\n",
 			__func__);
 		err = tfa_tib_dsp_msgmulti(tfa, -2, NULL);
+		mutex_unlock(&dsp_msg_lock);
 	}
 
 	/* cold start */
@@ -4564,9 +4574,11 @@ enum tfa_error tfa_dev_stop(struct tfa_device *tfa)
 			== tfa->active_count
 			|| tfa_count_status_flag(tfa, TFA_SET_CONFIG) > 0) {
 			/* flush message buffer */
+			mutex_lock(&dsp_msg_lock);
 			pr_debug("%s: flush buffer in blob, at stop\n",
 				__func__);
 			err = tfa_tib_dsp_msgmulti(tfa, -2, NULL);
+			mutex_unlock(&dsp_msg_lock);
 		}
 		tfa->is_bypass = 0; /* reset at stop */
 	}
@@ -6239,6 +6251,8 @@ enum tfa98xx_error tfa_write_volume(struct tfa_device *tfa, int *sknt)
 		bytes[i * 3 + 1] = (uint8_t)((data >> 8) & 0xff);
 		bytes[i * 3 + 2] = (uint8_t)(data & 0xff);
 	}
+
+	tfa->individual_msg = 1;
 
 	pr_info("%s: write CUSTOM_PARAM_SET_TSURF\n", __func__);
 	error = tfa_dsp_cmd_id_write
