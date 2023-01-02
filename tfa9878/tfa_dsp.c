@@ -1579,6 +1579,8 @@ enum tfa98xx_error dsp_msg(struct tfa_device *tfa,
 
 		length = 4 * length24 / 3;
 		intbuf = kmem_cache_alloc(tfa->cachep, GFP_KERNEL);
+		if (intbuf == NULL)
+			return TFA98XX_ERROR_FAIL;
 		buf = (char *)intbuf;
 
 		/* convert 24 bit DSP messages to a 32 bit integer */
@@ -1678,6 +1680,8 @@ enum tfa98xx_error dsp_msg_read(struct tfa_device *tfa,
 	if (tfa->convert_dsp32) {
 		length = 4 * length24 / 3;
 		bytes = kmem_cache_alloc(tfa->cachep, GFP_KERNEL);
+		if (bytes == NULL)
+			return TFA98XX_ERROR_FAIL;
 	}
 
 	if (tfa->has_msg == 0) { /* via i2c */
@@ -1878,16 +1882,15 @@ enum tfa98xx_error tfa_dsp_cmd_id_write(struct tfa_device *tfa,
 
 	buf_p_index = tfa98xx_buffer_pool_access
 		(-1, num_bytes + 3, &buffer, POOL_GET);
-	if (buf_p_index != -1) {
+	if (buf_p_index != -1)
 		pr_debug("%s: allocated from buffer_pool[%d] for 0x%02x%02x (%d)\n",
 			__func__, buf_p_index,
 			module_id + 0x80, param_id, num_bytes + 3);
-	} else {
+	else
 		buffer = kmalloc(num_bytes + 3, GFP_KERNEL);
-		if (buffer == NULL) {
-			mutex_unlock(&dsp_msg_lock);
-			return TFA98XX_ERROR_FAIL;
-		}
+	if (buffer == NULL) {
+		mutex_unlock(&dsp_msg_lock);
+		return TFA98XX_ERROR_FAIL;
 	}
 
 	buffer[nr++] = tfa->spkr_select;

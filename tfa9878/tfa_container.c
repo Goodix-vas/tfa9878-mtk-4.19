@@ -3013,11 +3013,6 @@ int tfa_tib_dsp_msgmulti(struct tfa_device *tfa,
 		total[idx] = len_word_in_bytes;
 	}
 
-	/* Accumulate messages to buffer */
-	if (tfa->verbose)
-		pr_debug("%s, id:0x%02x%02x%02x, length:%d\n",
-			__func__, buf[0], buf[1], buf[2], length);
-
 	/* check total message size after concatination */
 	post_len = total[idx] + length + (2 * len_word_in_bytes);
 	if (post_len > tfadsp_max_msg_size) {
@@ -3032,6 +3027,11 @@ int tfa_tib_dsp_msgmulti(struct tfa_device *tfa,
 			__func__, idx);
 		return TFA98XX_ERROR_FAIL;
 	}
+
+	/* Accumulate messages to buffer */
+	if (tfa->verbose)
+		pr_debug("%s, id:0x%02x%02x%02x, length:%d\n",
+			__func__, buf[0], buf[1], buf[2], length);
 
 	/* add length field (length in words) to the multi message */
 	if (tfa->convert_dsp32) {
