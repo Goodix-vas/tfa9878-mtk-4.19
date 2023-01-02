@@ -1872,13 +1872,22 @@ enum tfa98xx_error tfa_dsp_cmd_id_write(struct tfa_device *tfa,
 	enum tfa98xx_error error;
 	unsigned char *buffer;
 	int nr = 0;
+	int buf_p_index = -1;
 
 	mutex_lock(&dsp_msg_lock);
 
-	buffer = kmem_cache_alloc(tfa->cachep, GFP_KERNEL);
-	if (buffer == NULL) {
-		mutex_unlock(&dsp_msg_lock);
-		return TFA98XX_ERROR_FAIL;
+	buf_p_index = tfa98xx_buffer_pool_access
+		(-1, num_bytes + 3, &buffer, POOL_GET);
+	if (buf_p_index != -1) {
+		pr_debug("%s: allocated from buffer_pool[%d] for 0x%02x%02x (%d)\n",
+			__func__, buf_p_index,
+			module_id + 0x80, param_id, num_bytes + 3);
+	} else {
+		buffer = kmalloc(num_bytes + 3, GFP_KERNEL);
+		if (buffer == NULL) {
+			mutex_unlock(&dsp_msg_lock);
+			return TFA98XX_ERROR_FAIL;
+		}
 	}
 
 	buffer[nr++] = tfa->spkr_select;
@@ -1892,7 +1901,11 @@ enum tfa98xx_error tfa_dsp_cmd_id_write(struct tfa_device *tfa,
 
 	error = dsp_msg(tfa, nr, (char *)buffer);
 
-	kmem_cache_free(tfa->cachep, buffer);
+	if (buf_p_index != -1)
+		buf_p_index = tfa98xx_buffer_pool_access
+			(buf_p_index, 0, &buffer, POOL_RETURN);
+	else
+		kfree(buffer);
 
 	mutex_unlock(&dsp_msg_lock);
 
@@ -6143,6 +6156,12 @@ enum tfa98xx_error tfa_read_tspkr(struct tfa_device *tfa, int *spkt)
 	int data[TEMP_INDEX + 2];
 	int nr_bytes, i, spkr_count = 0;
 
+	if (tfa_count_status_flag(tfa, TFA_SET_DEVICE) != 0
+		|| tfa_count_status_flag(tfa, TFA_SET_CONFIG) != 0) {
+		pr_info("%s: skip if device is being configured\n", __func__);
+		return TFA98XX_ERROR_DSP_NOT_RUNNING;
+	}
+
 	error = tfa_supported_speakers(tfa, &spkr_count);
 	if (error != TFA98XX_ERROR_OK) {
 		pr_err("error in checking supported speakers\n");
@@ -6205,6 +6224,12 @@ enum tfa98xx_error tfa_write_volume(struct tfa_device *tfa, int *sknt)
 	int active_channel = -1, channel = 0;
 	int stcontrol[MAX_CHANNELS] = {0};
 	int data = 0;
+
+	if (tfa_count_status_flag(tfa, TFA_SET_DEVICE) != 0
+		|| tfa_count_status_flag(tfa, TFA_SET_CONFIG) != 0) {
+		pr_info("%s: skip if device is being configured\n", __func__);
+		return TFA98XX_ERROR_DSP_NOT_RUNNING;
+	}
 
 	error = tfa_supported_speakers(tfa, &spkr_count);
 	if (error != TFA98XX_ERROR_OK) {

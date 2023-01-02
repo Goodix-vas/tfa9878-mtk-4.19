@@ -3027,6 +3027,12 @@ int tfa_tib_dsp_msgmulti(struct tfa_device *tfa,
 		return TFA98XX_ERROR_BUFFER_TOO_SMALL;
 	}
 
+	if (buf == NULL) {
+		pr_err("%s: buf is NULL (index %d)!\n",
+			__func__, idx);
+		return TFA98XX_ERROR_FAIL;
+	}
+
 	/* add length field (length in words) to the multi message */
 	if (tfa->convert_dsp32) {
 		*blobptr[idx]++ = (uint8_t) /* lsb */
