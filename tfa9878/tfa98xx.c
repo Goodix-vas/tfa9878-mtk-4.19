@@ -2164,6 +2164,7 @@ static int tfa98xx_set_device_ctl(struct snd_kcontrol *kcontrol,
 			if (tfa->pause_state == 0) {
 				pr_info("%s: [%d] already resumed; no need to activate\n",
 					__func__, dev);
+				tfa_set_status_flag(tfa, TFA_SET_DEVICE, 1);
 				break;
 			}
 
@@ -2201,6 +2202,11 @@ static int tfa98xx_set_device_ctl(struct snd_kcontrol *kcontrol,
 			break;
 		}
 	}
+
+	/* reset counter */
+	tfa = tfa98xx_get_tfa_device_from_index(0);
+	tfa_set_status_flag(tfa, TFA_SET_DEVICE, -1);
+
 	mutex_unlock(&tfa98xx_mutex);
 
 	return 1;
@@ -2413,6 +2419,7 @@ static int tfa98xx_set_pause_ctl(struct snd_kcontrol *kcontrol,
 			if (tfa->pause_state == 0) {
 				pr_info("%s: [%d] already resumed, skip the request\n",
 					__func__, dev);
+				tfa_set_status_flag(tfa, TFA_SET_DEVICE, 1);
 				break;
 			}
 			/* exit if stream is not ready for initialization */
@@ -2473,6 +2480,11 @@ static int tfa98xx_set_pause_ctl(struct snd_kcontrol *kcontrol,
 			break;
 		}
 	}
+
+	/* reset counter */
+	tfa = tfa98xx_get_tfa_device_from_index(0);
+	tfa_set_status_flag(tfa, TFA_SET_DEVICE, -1);
+
 	mutex_unlock(&tfa98xx_mutex);
 
 	return 1;
