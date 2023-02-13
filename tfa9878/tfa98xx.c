@@ -2173,6 +2173,7 @@ static int tfa98xx_set_device_ctl(struct snd_kcontrol *kcontrol,
 			mutex_lock(&tfa98xx->dsp_lock);
 			pr_info("%s: trigger [dev %d - prof %d]\n", __func__,
 				dev, tfa98xx->profile);
+			tfa_set_active_handle(tfa98xx->tfa, tfa98xx->profile);
 			err = tfa98xx_tfa_start(tfa98xx,
 				tfa98xx->profile, tfa98xx->vstep);
 			if (err) {
@@ -2435,6 +2436,7 @@ static int tfa98xx_set_pause_ctl(struct snd_kcontrol *kcontrol,
 			mutex_lock(&tfa98xx->dsp_lock);
 			pr_info("%s: trigger [dev %d - prof %d]\n", __func__,
 				dev, tfa98xx->profile);
+			tfa_set_active_handle(tfa98xx->tfa, tfa98xx->profile);
 			err = tfa98xx_tfa_start(tfa98xx,
 				tfa98xx->profile, tfa98xx->vstep);
 			if (err) {
